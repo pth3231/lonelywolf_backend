@@ -1,15 +1,21 @@
 const express = require('express')
-const mariadb = require('mariadb')
+const dotenv = require('dotenv')
+const mssql = require('mssql')
 let router = express.Router()
 
-// Create a Pool object to handling the connection establishment
-const pool = mariadb.createPool({
-    host: 'localhost',
-    user: 'lonelywolf',
-    password: 'lonelywolf',
-    database: 'lonelywolf_db',
-    connectionLimit: 15
-})
+dotenv.config()
+
+// Create a config object for DB Connection
+const db_config = {
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    server: process.env.SERVER,
+    port: parseInt(process.env.PORT),
+    database: process.env.DATABASE,
+    options: {
+        encrypt: true
+    }
+}
 
 router.route('/signup')
     .get((req, res) => {
@@ -22,13 +28,13 @@ router.route('/signup')
         const input_password = req.body.pass
         const input_nickname = req.body.nickname
 
-        let conn
         try {
             // Wait for the connection to be established
-            conn = await pool.getConnection()
+            var poolConnection = await mssql.connect(db_config)
 
             // Query rows with the matching username and password
-            await conn.query("INSERT INTO auth_info SET username=?, pass=?, acc_name=?", [input_username, input_password, input_nickname])
+            await poolConnection.request().query(`INSERT INTO [dbo].[auth_info] ([user], [pass], [name])
+                                                    VALUES ('${input_username}', '${input_password}', '${input_nickname}'); `)
             console.log(`[routesSignup.js]: Signed up {username: ${input_username}, nickname: ${input_username} }`)
             res.json({status: true})
         } catch (err) {
@@ -36,7 +42,7 @@ router.route('/signup')
             res.json({status: false})
         } finally {
             // End connection session if the conn is still running
-            if (conn) return conn.end()
+            poolConnection.close()
         }
     })
 

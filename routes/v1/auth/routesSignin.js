@@ -1,5 +1,5 @@
 const express = require('express')
-const mariadb = require('mariadb')
+const mssql = require('mssql')
 const dotenv = require('dotenv')
 const jwt = require('jsonwebtoken')
 const config = require('../../config.json')
@@ -7,14 +7,17 @@ let router = express.Router()
 
 dotenv.config()
 
-// Create a Pool object to handling the connection establishment
-const pool = mariadb.createPool({
-    host: 'localhost',
-    user: 'lonelywolf',
-    password: 'lonelywolf',
-    database: 'lonelywolf_db',
-    connectionLimit: 15
-})
+// Create a config object for DB Connection
+const db_config = {
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    server: process.env.SERVER,
+    port: parseInt(process.env.PORT),
+    database: process.env.DATABASE,
+    options: {
+        encrypt: true
+    }
+}
 
 // This is the route for sign in, use to check if there is any matched result in the database
 // If it does, the server will send a cookie and init a new session to validate later 
@@ -28,14 +31,15 @@ router.route('/signin')
         const password = req.body.pass
         console.log(`[routesSignin.js]: Request data ${req.body}`)
 
-        let conn
         try {
             // Wait for the connection to be established
-            conn = await pool.getConnection()
+            var poolConnection = await mssql.connect(db_config)
 
-            // Query rows with the matching username and password
-            const rows = await conn.query("SELECT acc_name, strength, defense, agility, stamina, coin FROM auth_info WHERE (username = ?) AND (pass = ?)", [username, password])
-            console.log(`[routesSignin.js]: ${rows}`)
+            // Query rows with the matching username and password (, [str], [def], [agi], [sta], [coin] )
+            const rows = await poolConnection.request().query(`SELECT [name]
+                                                               FROM [dbo].[auth_info] WHERE ([user]='${username}') AND ([pass]='${password}');`)
+            console.log(`[routesSignin.js]}`)
+            console.log(rows)
 
             const token = jwt.sign(
                 { username: req.body.user }, 
@@ -44,13 +48,14 @@ router.route('/signin')
             ) 
 
             // If it does exist
-            if (rows.length == 1) {
+            if (rows.recordset.length == 1) {
                 // Send a successful response for frontend
                 res.cookie("token", token, {
                     maxAge: 3600*1000,
                     httpOnly: true
                 })
                 res.cookie("username", username, {
+
                     maxAge: 3600*1000,
                     httpOnly: true
                 })
@@ -61,7 +66,7 @@ router.route('/signin')
                 })
 
                 console.log(`[routesSignin.js]: Signed in!`)
-            } else if (rows.length == 0) {
+            } else if (rows.recordset.length == 0) {
                 console.log(`[routesSignin.js]: There is no such of this username/password that matched with out database`)
 
                 // Send a no existing response
@@ -71,7 +76,7 @@ router.route('/signin')
             console.log(`[routesSignin.js]: ${err}`)
         } finally {
             // End connection session if the conn is still running
-            if (conn) return conn.end()
+            poolConnection.close()
         }
     })
 

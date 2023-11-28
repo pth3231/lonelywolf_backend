@@ -1,5 +1,5 @@
 const express = require('express')
-const mariadb = require('mariadb')
+const mssql = require('mssql')
 const schedule = require('node-schedule')
 const task_list = require('./task_list.json').task_list
 
@@ -9,35 +9,16 @@ let randomBetween = require('../modules/randomBetween')
 let router = express.Router()
 
 // Create a Pool object to handling the connection establishment
-const pool = mariadb.createPool({
-    host: 'localhost',
-    user: 'lonelywolf',
-    password: 'lonelywolf',
-    database: 'lonelywolf_db',
-    connectionLimit: 15
-})
+// const pool = mssql.createPool({
+//     host: 'localhost',
+//     user: 'lonelywolf',
+//     password: 'lonelywolf',
+//     database: 'lonelywolf_db',
+//     connectionLimit: 15
+// })
 
 // Pre-set value for randomedTask 
-let randomedTask = [
-    {
-        "id": "BT_01",
-        "title": "Newbie Runner!",
-        "desc": "Do at least 1000 steps",
-        "steps": 1000
-    },
-    {
-        "id": "IT_02",
-        "title": "Intermediate Runner!",
-        "desc": "Do at least 10000 steps",
-        "steps": 10000
-    },
-    {
-        "id": "AT_01",
-        "title": "If you can do it, just do it!",
-        "desc": "Do at least 15000 steps",
-        "steps": 15000
-    }
-]
+let randomedTask = []
 schedule.scheduleJob('0 0 0 * * *', function() {
     // Generate a random item
     randomedTask.pop()
