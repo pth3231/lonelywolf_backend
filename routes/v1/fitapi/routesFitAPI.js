@@ -7,7 +7,7 @@ let router = express.Router()
 const oAuth2Client = new google.auth.OAuth2(
     config.client_id,
     config.client_secret,
-    "http://localhost:6767/api/v1/fitapi/redirect"
+    "https://lonelywolf-backend.vercel.app/api/v1/fitapi/redirect"
 )
 
 // Scope of permissions that this app requires, some of them are temporary and can be deleted later
