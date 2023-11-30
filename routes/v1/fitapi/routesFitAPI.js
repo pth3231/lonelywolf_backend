@@ -3,11 +3,12 @@ const { google } = require('googleapis')
 const config = require('../../config.json')
 let router = express.Router()
 
+
 // Initialize OAuth2 Client, so that consent window can verify the authentication of Google account
 const oAuth2Client = new google.auth.OAuth2(
     config.client_id,
     config.client_secret,
-    "http://localhost:6767/api/v1/fitapi/redirect"
+    `${config.api_url}/api/v1/fitapi/redirect`
 )
 
 // Scope of permissions that this app requires, some of them are temporary and can be deleted later
