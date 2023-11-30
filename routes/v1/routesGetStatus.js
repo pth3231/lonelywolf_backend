@@ -24,7 +24,7 @@ router.post("/getstatus", authenticateToken, async (req, res) => {
         var poolConnection = await mssql.connect(db_config)
 
         // Query status of character
-        const rows = await poolConnection.request().query(`SELECT [name] FROM [dbo].[auth_info] WHERE ([user]='${req.body.username}')`)
+        const rows = await poolConnection.request().query(`SELECT [atk], [def], [agi], [sta], [coin] FROM [dbo].[stat_info] WHERE ([user]='${req.body.username}')`)
         console.log(`[routesGetStatus.js] result`)
         console.log(rows.recordset)
         // Send back an object

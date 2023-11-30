@@ -7,7 +7,7 @@ let router = express.Router()
 const oAuth2Client = new google.auth.OAuth2(
     config.client_id,
     config.client_secret,
-    "https://lonelywolf-backend.vercel.app/api/v1/fitapi/redirect"
+    "http://localhost:6767/api/v1/fitapi/redirect"
 )
 
 // Scope of permissions that this app requires, some of them are temporary and can be deleted later
@@ -30,23 +30,27 @@ router.route("/geturl")
     })
 
 router.route("/redirect")
-    .get(async (req, res) => {
+    .get((req, res) => {
+        let getTokenFunc = async () => {
+            try {
+                // Wait for the tokens from code
+                const { tokens } = await oAuth2Client.getToken(code)
+                oAuth2Client.setCredentials(tokens)
+                console.log(tokens)
+                res.sendStatus(200)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+
         // Extract code from Consent Screen
         const { code } = req.query
         console.log(code)
-        try {
-            // Wait for the tokens from code
-            const { tokens } = await oAuth2Client.getToken(code)
-            oAuth2Client.setCredentials(tokens)
-            console.log(tokens)
-            res.sendStatus(200)
-        } catch (e) {
-            console.error(e)
-        }
+        getTokenFunc()
     })
 
 router.route("/fetch")
-    .get(async (req, res) => {
+    .get((req, res) => {
         try {
             // Fit API object  
             const fitness = google.fitness({
@@ -68,7 +72,7 @@ router.route("/fetch")
             console.log("Duration: ", duration)
 
             // Wait for the response from Google Fit API
-            const response = await fitness.users.dataset.aggregate({
+            fitness.users.dataset.aggregate({
                 userId: "me",
                 requestBody: {
                     aggregateBy: [
@@ -80,24 +84,27 @@ router.route("/fetch")
                     startTimeMillis: startTimeMillis.toString(),
                     endTimeMillis: endTimeMillis.toString()
                 }
+            }).then(response => {
+                console.log(response.data)
+                // Retrieve data from the body of the response
+                const fitnessData = response.data.bucket
+                let data = {}
+
+                console.log(fitnessData)
+
+                for (let bucket_number = 0; bucket_number < fitnessData.length; bucket_number++) {
+                    console.log(fitnessData[bucket_number].dataset)
+                    data[bucket_number] = fitnessData[bucket_number].dataset[0].point[0].value[0].intVal
+                }
+
+                console.log("Fetched data from Fit API done!")
+                console.log(data)
+
+                // Send data to frontend
+                res.json(data)
+            }).catch(e => {
+                console.log(`[routesFitAPI.js] ${e}`)
             })
-
-            // Retrieve data from the body of the response
-            const fitnessData = response.data.bucket
-            let data = {}
-
-            console.log(fitnessData)
-
-            for (let bucket_number = 0; bucket_number < fitnessData.length; bucket_number++) {
-                console.log(fitnessData[bucket_number].dataset)
-                data[bucket_number] = fitnessData[bucket_number].dataset[0].point[0].value[0].intVal
-            }
-
-            console.log("Fetched data from Fit API done!")
-            console.log(data)
-
-            // Send data to frontend
-            res.json(data)
         } catch (e) {
             console.error(e)
         }
