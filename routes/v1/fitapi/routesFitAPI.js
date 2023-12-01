@@ -104,7 +104,7 @@ router.route("/fetch")
                 // Send data to frontend
                 res.json(data)
             }).catch(e => {
-                console.log(`[routesFitAPI.js] ${e}`)
+                console.error(`[routesFitAPI.js] ${e}`)
             })
         } catch (e) {
             console.error(e)

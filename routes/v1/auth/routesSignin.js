@@ -72,11 +72,11 @@ router.route('/signin')
                 // Send a no existing response
                 res.status(200).json({ status: false })
             }
-        } catch (err) {
-            console.log(`[routesSignin.js]: ${err}`)
-        } finally {
+            
             // End connection session if the conn is still running
             poolConnection.close()
+        } catch (err) {
+            console.log(`[routesSignin.js]: ${err}`)
         }
     })
 
