@@ -46,7 +46,7 @@ router.route('/signup')
             res.json({status: false})
         } finally {
             // End connection session if the conn is still running
-            poolConnection.close()
+            if (poolConnection) poolConnection.close()
         }
     })
 

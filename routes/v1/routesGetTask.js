@@ -19,6 +19,10 @@ let router = express.Router()
 
 // Pre-set value for randomedTask 
 let randomedTask = []
+randomedTask.push(randomBetween(task_list.beginner_tasks))
+randomedTask.push(randomBetween(task_list.intermediate_tasks))
+randomedTask.push(randomBetween(task_list.advanced_tasks))
+
 schedule.scheduleJob('0 0 0 * * *', function() {
     // Generate a random item
     randomedTask.pop()

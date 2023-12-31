@@ -33,7 +33,7 @@ router.post("/getstatus", authenticateToken, async (req, res) => {
         console.log(err)
     } finally {
         // End connection session if the conn is still running
-        poolConnection.close()
+        if (poolConnection) poolConnection.close()
     }
 
 })
