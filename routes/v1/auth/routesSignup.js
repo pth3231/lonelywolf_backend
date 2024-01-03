@@ -34,11 +34,12 @@ router.route('/signup')
 
             // Query rows with the matching username and password
             await poolConnection.request().query(`INSERT INTO [dbo].[auth_info] ([user], [pass], [name])
-                                                    VALUES ('${input_username}', '${input_password}', '${input_nickname}'); `)
+                                                    VALUES ('${input_username}', '${input_password}', '${input_nickname}'); 
+                                                  INSERT INTO [dbo].[stat_info] ([user], [atk], [def], [agi], [sta], [coin])
+                                                    VALUES ('${input_username}', 0, 0, 0, 0, 0);`)
 
             // Insert new data into stat_info
-            await poolConnection.request().query(`INSERT INTO [dbo].[stat_info] ([user], [atk], [def], [agi], [sta], [coin])
-                                                    VALUES ('${input_username}', 0, 0, 0, 0, 0;`)
+            await poolConnection.request().query(``)
             console.log(`[routesSignup.js]: Signed up {username: ${input_username}, nickname: ${input_username} }`)
             res.json({status: true})
         } catch (err) {

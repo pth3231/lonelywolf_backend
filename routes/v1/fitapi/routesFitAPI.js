@@ -65,11 +65,11 @@ router.route("/fetch")
             const now = new Date()
             const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
 
-            const startTimeMillis = midnight.getTime()
-            console.log("Midnight: ", startTimeMillis)
+            const startTimeMillis = midnight.getTime() - 7 * aDayInMillis
+            console.log("7 days ago: ", startTimeMillis)
             const endTimeMillis = Date.now()
             console.log("Now: ", endTimeMillis)
-            const duration = Date.now() - midnight.getTime()
+            const duration = aDayInMillis
             console.log("Duration: ", duration)
 
             // Wait for the response from Google Fit API
